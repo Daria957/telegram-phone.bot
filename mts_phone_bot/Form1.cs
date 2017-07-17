@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,6 +21,7 @@ namespace mts_phone_bot
 
             this.bw = new BackgroundWorker();
             this.bw.DoWork += this.bw_DoWork;
+            
         }
         async void bw_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -38,12 +40,34 @@ namespace mts_phone_bot
                     foreach (var update in updates) 
                     {
                         var message = update.Message;
+
+                        const string req = @"^((8|\+7)[\- ]?)?(\(?9\d{2}\)?[\- ]?)?([\d][\- ]?){7}$";
+                       
+                        Console.WriteLine(Regex.Replace(message.Text, @"\D+",""));
+                        String num = Regex.Replace(message.Text, @"\D+", "");
+                        
+                        var regex = new Regex(req);
+
+                        Console.WriteLine(regex.IsMatch(num));
+
+                        if (regex.IsMatch(num)) {
+                            String lastnum = Regex.Replace(num, @"^(8|\+7)?[\- ]?\(?(9\d{2})\)?[\- ]?([\d])[\- ]?([\d])[\- ]?([\d])[\- ]?([\d])[\- ]?([\d])[\- ]?([\d])[\- ]?([\d])$", "+7($2)$3$4$5-$6$7-$8$9");
+                            Console.WriteLine(lastnum);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Неверный номер");
+                        }
+
+
+
                         if (message.Type == Telegram.Bot.Types.Enums.MessageType.TextMessage)
                         {
                             if (dict.ContainsKey(message.Chat.Id))
                             {
                                 if (message.Date > dict[message.Chat.Id].AddSeconds(10))
                                 {
+                                    
                                     String phone = "";
 
                                     for (int i = 0; i < message.Text.Length; i++)
